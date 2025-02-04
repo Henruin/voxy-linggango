@@ -26,8 +26,6 @@ public class RenderDataFactory4 {
     private final long[] sectionData = new long[32*32*32*2];
 
     private final int[] opaqueMasks = new int[32*32];
-    private final int[] nonOpaqueMasks = new int[32*32];
-
 
     //TODO: emit directly to memory buffer instead of long arrays
 
@@ -153,9 +151,7 @@ public class RenderDataFactory4 {
     private void prepareSectionData() {
         final var sectionData = this.sectionData;
         int opaque = 0;
-        int notEmpty = 0;
 
-        int neighborAcquireMsk = 0;
         for (int i = 0; i < 32*32*32;) {
             long block = sectionData[i + 32 * 32 * 32];//Get the block mapping
 
@@ -167,7 +163,6 @@ public class RenderDataFactory4 {
 
             boolean isFullyOpaque = ModelQueries.isFullyOpaque(modelMetadata);
             opaque |= (isFullyOpaque ? 1:0) << (i & 31);
-            notEmpty |= (modelId!=0 ? 1:0) << (i & 31);
 
             //TODO: here also do bitmask of what neighboring sections are needed to compute (may be getting rid of this in future)
 
@@ -176,9 +171,7 @@ public class RenderDataFactory4 {
 
             if ((i & 31) == 0) {
                 this.opaqueMasks[(i >> 5) - 1] = opaque;
-                this.nonOpaqueMasks[(i >> 5) - 1] = notEmpty^opaque;
                 opaque = 0;
-                notEmpty = 0;
             }
         }
     }
