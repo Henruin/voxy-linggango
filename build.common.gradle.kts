@@ -54,8 +54,7 @@ repositories {
     maven {
         url = uri("https://artifex.soh.gg/maven/m3t4f1v3/bp-voxy-packages/")
     }
-
-    if (prop("useRubyOnly").toBoolean()) {
+    if (prop("useRubyOnly").orNull.toBoolean().not()) {
         exclusiveContent {
             forRepository {
                 maven {
