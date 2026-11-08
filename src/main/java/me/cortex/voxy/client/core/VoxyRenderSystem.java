@@ -97,7 +97,10 @@ public class VoxyRenderSystem {
         return MDICSectionRenderer.FACTORY;
     }
 
+    private boolean pipelineStale;
+
     public VoxyRenderSystem(WorldEngine world, ServiceManager sm) {
+        IrisUtil.STALE_PIPELINE = false;//Built against the current iris pipeline
         //Keep the world loaded, NOTE: this is done FIRST, to keep and ensure that even if the rest of loading takes more
         // than timeout, we keep the world acquired
         world.acquireRef();
@@ -244,6 +247,20 @@ public class VoxyRenderSystem {
     }
 
     public void renderOpaque(Viewport<?> viewport) {
+        GPUTiming.INSTANCE.setEnabled(Minecraft.getInstance().options.renderDebug);//Gpu pass timings only while F3 is open
+        if (IrisUtil.STALE_PIPELINE && !this.pipelineStale) {//Skip drawing and rebuild on the next tick, once iris has its new pipeline
+            this.pipelineStale = true;
+            Minecraft.getInstance().execute(() -> {
+                var levelRenderer = (IGetVoxyRenderSystem) Minecraft.getInstance().levelRenderer;
+                if (levelRenderer.voxy$getRenderSystem() == this) {
+                    levelRenderer.voxy$shutdownRenderer();
+                    levelRenderer.voxy$createRenderer();
+                }
+            });
+        }
+        if (this.pipelineStale) {
+            return;
+        }
         if (viewport == null) {
             return;
         }

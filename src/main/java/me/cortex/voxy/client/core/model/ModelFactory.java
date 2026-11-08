@@ -159,6 +159,17 @@ public class ModelFactory {
     }
 
     public boolean addEntry(int blockId) {
+        return this.addEntry(blockId, true);
+    }
+
+    //Some modded fluid blocks are not LiquidBlocks yet are their own fluid's legacy block, so they have no fluid apart from themselves
+    private static boolean hasSeparateFluid(BlockState state) {
+        var fluid = state.getFluidState();
+        return !fluid.isEmpty() && fluid.createLegacyBlock() != state;
+    }
+
+    //Fluids are added one level deep only: some modded fluid blocks are their own fluid's legacy block and recursed until the stack overflowed
+    private boolean addEntry(int blockId, boolean addFluid) {
         if (this.idMappings[blockId] != -1) {
             return false;
         }
@@ -181,7 +192,7 @@ public class ModelFactory {
         //Before we enqueue the baking of this blockstate, we must check if it has a fluid state associated with it
         // if it does, we must ensure that it is (effectivly) baked BEFORE we bake this blockstate
         boolean isFluid = blockState.getBlock() instanceof LiquidBlock;
-        if ((!isFluid) && (!blockState.getFluidState().isEmpty())) {
+        if (addFluid && (!isFluid) && hasSeparateFluid(blockState)) {
             //Insert into the fluid LUT
             var fluidState = blockState.getFluidState().createLegacyBlock();
 
@@ -192,7 +203,7 @@ public class ModelFactory {
 
                 //This is a hack but does work :tm: due to how the download stream is setup
                 // it should enforce that the fluid state is processed before our blockstate
-                addEntry(fluidStateId);
+                addEntry(fluidStateId, false);
             }
         }
 
@@ -409,7 +420,8 @@ public class ModelFactory {
 
         int clientFluidStateId = -1;
 
-        if ((!isFluid) && (!blockState.getFluidState().isEmpty())) {
+        boolean hasFluid = (!isFluid) && hasSeparateFluid(blockState);
+        if (hasFluid) {
             //Insert into the fluid LUT
             var fluidState = blockState.getFluidState().createLegacyBlock();
 
@@ -417,7 +429,9 @@ public class ModelFactory {
 
             clientFluidStateId = this.idMappings[fluidStateId];
             if (clientFluidStateId == -1) {
-                throw new IllegalStateException("Block has a fluid state but fluid state is not already baked!!!");
+                //Drawn without its fluid rather than crashing the game
+                Logger.warn("Fluid of " + blockState + " is not baked, drawing it without the fluid");
+                hasFluid = false;
             }
         }
 
@@ -471,7 +485,7 @@ public class ModelFactory {
         // TODO: if it has a constant colour instead... idk why (apparently for things like spruce leaves)?? but premultiply the texture data by the constant colour
 
         //If it contains fluid but isnt a fluid
-        if ((!isFluid) && (!blockState.getFluidState().isEmpty()) && clientFluidStateId != -1) {
+        if (hasFluid) {
 
             //Or it with the fluid state biome dependency
             isBiomeColourDependent |= ModelQueries.isBiomeColoured(this.getModelMetadataFromClientId(clientFluidStateId));
@@ -522,7 +536,7 @@ public class ModelFactory {
         metadata |= isBiomeColourDependent?1:0;
         metadata |= layer == RenderType.translucent()?2:0;
         metadata |= needsDoubleSidedQuads?4:0;
-        metadata |= ((!isFluid) && !blockState.getFluidState().isEmpty())?8:0;//Has a fluid state accosiacted with it and is not itself a fluid
+        metadata |= hasFluid?8:0;//Has a fluid state accosiacted with it and is not itself a fluid
         metadata |= isFluid?16:0;//Is a fluid
 
         metadata |= cullsSame?32:0;

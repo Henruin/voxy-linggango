@@ -19,9 +19,11 @@ public class IrisUtil {
     }
 
     public static CapturedViewportParameters CAPTURED_VIEWPORT_PARAMETERS;
+    //Set when iris destroys the pipeline voxy renders through, cleared when a new voxy renderer is built
+    public static volatile boolean STALE_PIPELINE;
 
     public static final boolean IRIS_INSTALLED = VoxyCommon.getPlatformUtil().isModLoaded("iris") || VoxyCommon.getPlatformUtil().isModLoaded("oculus");
-    public static final boolean SHADER_SUPPORT = true;//System.getProperty("voxy.enableExperimentalIrisPipeline", "false").equalsIgnoreCase("true");
+    public static final boolean SHADER_SUPPORT = me.cortex.voxy.client.config.VoxyConfig.CONFIG.useShaderPipeline;//System.getProperty("voxy.enableExperimentalIrisPipeline", "false").equalsIgnoreCase("true");
 
 
     private static boolean irisShadowActive0() {

@@ -78,8 +78,11 @@ public class ModelBakerySubsystem {
         }
         this.seenIdsLock.unlock();
         this.enqueueLock.lock();
-        this.factory.addEntry(blockId);
-        this.enqueueLock.unlock();
+        try {//A throw here used to leave the lock held, stalling every worker for good
+            this.factory.addEntry(blockId);
+        } finally {
+            this.enqueueLock.unlock();
+        }
         LockSupport.unpark(this.processingThread);
     }
 

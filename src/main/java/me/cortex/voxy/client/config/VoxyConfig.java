@@ -45,6 +45,8 @@ public class VoxyConfig
     public String ssaoMode;
 
     public boolean useEnvironmentalFog = true;
+    //False draws lods with voxy's own pipeline even with a shaderpack on: much cheaper, but lods skip the pack's lighting. Needs a restart
+    public boolean useShaderPipeline = true;
 
     public SSAO.SSAOMode getSSAOMode() {
         if (this.ssaoMode == null) return SSAO.SSAOMode.AUTO;

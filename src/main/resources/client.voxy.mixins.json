@@ -49,6 +49,8 @@
     "sodium.AccessorChunkTracker",
     "sodium.AccessorSodiumWorldRenderer",
     "sodium.MixinChunkJobQueue",
+//? if 1.20.1
+    "sodium.MixinOcclusionCuller",
     "sodium.MixinCloudRenderer",
     // "sodium.MixinDefaultChunkRenderer",
     // "sodium.MixinRenderRegionManager",
