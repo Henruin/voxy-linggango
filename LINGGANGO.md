@@ -34,11 +34,11 @@ Why swap the forks: in the same spot, with the same shader (Solas) and the same 
 
 ```
 git clone -b linggango https://github.com/Henruin/voxy-linggango.git
-cd voxy
-./gradlew :1.20.1-forge:jar
+cd voxy-linggango
+.\gradlew :1.20.1-forge:jar
 ```
 
-Needs a JDK 25. The jar ends up in `versions/1.20.1-forge/build/libs/`.
+Needs a JDK 17 or newer (I used JDK 25). The jar ends up in `versions/1.20.1-forge/build/libs/`.
 
 ## Voxy SeedGen
 
